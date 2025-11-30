@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+
+# Virtual Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Gurobi related cache
+gurobi.log
+gurobi*.lic
+gurobi.env
