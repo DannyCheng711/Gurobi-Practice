@@ -1,4 +1,4 @@
-from gurobipy import *
+from gurobipy import Model, GRB, LinExpr
 import numpy as np
 
 class GurobiModelService():
@@ -88,7 +88,6 @@ class GurobiModelService():
         self.y = self.m.addVars(self.trucks, vtype=GRB.BINARY, name="y")
         self.z = self.m.addVars(self.orders, vtype=GRB.BINARY, name="z")
 
-
     def _set_objective_func(self):
         # summation fixed cost + transportation cost + penalty
         sum_fixed_cost = 0
@@ -105,7 +104,6 @@ class GurobiModelService():
             sum_penalty += self.penalty[i] * self.z[i]
 
         self.m.setObjective(sum_fixed_cost + sum_trans_cost + sum_penalty, GRB.MINIMIZE)
-         
 
     def _set_constraints(self):
         # constraint 1 
@@ -135,6 +133,19 @@ class GurobiModelService():
 
     def _print_results(self):
 
+        status = self.m.Status
+        if status == GRB.OPTIMAL:
+            print(f"Optimal objective: {self.m.ObjVal:g}")
+        elif status == GRB.INFEASIBLE:
+            print("Model is infeasible.")
+            return
+        elif status == GRB.UNBOUNDED:
+            print("Model is unbounded.")
+            return
+        else:
+            print(f"Optimization ended with status {status}")
+            return
+
         # x 
         for i in self.orders:
             for h in self.trucks:
@@ -145,11 +156,10 @@ class GurobiModelService():
             if self.y[h].x > 0:
                 print(f"truck {h} is assigned")
         
-        # p
+        # z
         for i in self.orders:
             if self.z[i].x > 0:
                 print(f"order {i} is dropped, so the penalty occurs")
-
 
     def run(self):
         self._create_model()
